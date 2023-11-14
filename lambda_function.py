@@ -1,4 +1,3 @@
-
 from datetime import datetime
 import dateutil.tz
 import csv
@@ -9,38 +8,38 @@ from email.mime.text import MIMEText
 from email import encoders
 import psycopg2
 
-def lambda_handler(event, context):
-    pass
 
-from_email = "apkudo.project@gmail.com"  # The address that is going to be used by code to send emails.
-to_email = "apkudo.project@gmail.com"  # Recipient emails. Can accept multiple emails as a list.
+from_email_address = "example@gmail.com"  # The address that is going to be used to send emails.
+from_email_password = "example"  # Email Password or the dedicated key.
+to_email = "example@gmail.com"  # Recipient emails. Can accept multiple emails as a list.
 
 eastern = dateutil.tz.gettz('US/Eastern')
 today = datetime.now(tz=eastern).strftime("%m-%d-%y %H:%M")
 attachment = f"Report  {today}.csv"  # The report will be named "Report - today's date."
 headers = "Id FirstName LastName Age Job Company".split()  # The headers which are going to be used in the generated file.
-query = "SELECT * FROM apkudo_test WHERE age < 40 ORDER by fname "  # Query which will be sent to Postgres.
+query = "SELECT * FROM table WHERE age < 40 ORDER by fname; "  # Query which will be sent to Postgres.
 
 
 # Postgres credentials.
 def sql():
     con = psycopg2.connect(
-        database="postgres",
-        user="postgres",
-        password="Teklunia1",
-        host="34.135.217.247",
-        port='5432'
+        database="",  # database name
+        user="",  # username
+        password="",  # password
+        host="127.0.0.1",  # local or web host ip
+        port='5432'  # database port
     )
     return con
 
 
 # from_email credentials
+# Example Gmail
 def send_email():
     with smtplib.SMTP("smtp.gmail.com", 587) as server:
         server.starttls()
         server.ehlo()
-        server.login("apkudo.project@gmail.com", "jarhvmtwprgpdgza")  # Email address and password.
-        server.sendmail(from_email, to_email, msg.as_string())
+        server.login(from_email_address, from_email_password)  # Email address and password.
+        server.sendmail(from_email_address, to_email, msg.as_string())
         server.quit()
 
 
@@ -54,7 +53,7 @@ sql().close()
 cursor.close()
 
 if len(results) >= 1:  # A check is performed whether to generate a report or not.
-    with open('/tmp/'+ attachment, "w") as file:
+    with open('/tmp/' + attachment, "w") as file:
         writer = csv.writer(file)
         writer.writerow(headers)
         for i in results:
@@ -66,7 +65,7 @@ if len(results) >= 1:  # A check is performed whether to generate a report or no
     body = MIMEText(body)
     msg.attach(body)
     part = MIMEBase("application", "octet-stream")
-    part.set_payload(open('/tmp/'+ attachment, "rb").read())
+    part.set_payload(open('/tmp/' + attachment, "rb").read())
     encoders.encode_base64(part)
     part.add_header("Content-Disposition", "attachment", filename=attachment)
     msg.attach(part)
